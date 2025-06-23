@@ -1,1 +1,2 @@
-.backend/settings.py
+backend/settings.py
+.gitignore
