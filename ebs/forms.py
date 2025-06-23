@@ -18,7 +18,6 @@ class ClienteForm(forms.ModelForm):
         model = Cliente
         fields = '__all__'
         widgets = {
-            'cep': forms.TextInput(attrs={'data-mask': '00000-000'}),
             'cep': forms.TextInput(attrs={'placeholder': '00000-000'}),
             'cnpj': forms.TextInput(attrs={'data-mask': '00.000.000/0000-00'}),
             'cnpj': forms.TextInput(attrs={'placeholder': '00.000.000/0000-00'}),
@@ -33,8 +32,8 @@ class PostoForm(forms.ModelForm):
         model = Posto
         fields = '__all__'
         widgets = {
-            'cep': forms.TextInput(attrs={'data-mask': '00000-000'}),
-            'cep': forms.TextInput(attrs={'placeholder': 'CEP'}),
+            # 'cep': forms.TextInput(attrs={'data-mask': '00000-000', 'placeholder': '00000-000'}),
+            # 'cep': forms.TextInput(attrs={'placeholder': 'CEP'}),
             'cep': forms.TextInput(attrs={'placeholder': '00000-000'}),
             'endereco': forms.TextInput(attrs={'placeholder': 'Rua, Avenida, etc.'}),
             'bairro': forms.TextInput(attrs={'placeholder': 'Bairro do posto'}),

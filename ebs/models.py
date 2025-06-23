@@ -13,22 +13,6 @@ class Cliente(models.Model):
     bairro = models.CharField(max_length=100, blank=True, null=True) # Bairro do cliente
     cidade = models.CharField(max_length=100, blank=True, null=True) # Cidade do cliente
     estado = models.CharField(max_length=2, blank=True, null=True) # Estado do cliente
-    CONFIGURACAO_CHOICES = [
-        ('VIVO', 'Vivo'),
-        ('CLARO', 'Claro'),
-        ('TIM', 'Tim'),
-        ('OI', 'Oi'),
-        ('ARQIA', 'Arquia'),
-        ('OUTRO', 'Outro'),
-    ]
-    
-    configuracao = models.CharField(
-        max_length=20,
-        choices=CONFIGURACAO_CHOICES,
-        default='VIVO',
-        blank=True,
-        null=True,
-    )
     
     def __str__(self):
         return self.nome
