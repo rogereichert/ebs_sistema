@@ -1,0 +1,11 @@
+from django.apps import AppConfig
+
+
+
+class EbsConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'ebs'
+
+    def ready(self):
+        import ebs.signals
+    

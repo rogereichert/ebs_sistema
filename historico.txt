@@ -1,0 +1,116 @@
+ebs/settings.py
+* AUTH_PASSWORD_VALIDATORS = tirei as restrições de senha
+* DATABASES = adicionei as configurações do banco de dados
+* LANGUAGE_CODE = troquei para 'pt-br'
+* TIME_ZONE = troquei para 'America/Sao_Paulo'
+
+criação do app
+* python manage.py startapp ebs (antigo nome dispositivos)
+
+ativar o app no django:
+* settings.py
+INSTALLED_APPS = [
+    ...
+    'dispositivos', (no caso é ebs)
+]
+
+------------------------------------------------------------
+CONFIGURAÇÃO E CRIALÃO DA BASE DE DADOS
+
+1 - MODELS ----> ebs/models.py
+🔹 1. Modelo: Cliente
+🔹 2. Modelo: Posto
+🔹 3. Modelo: Método de Aquisição
+🔹 4. Modelo: Dispositivo
+
+Após a criação das models rodar: 
+python manage.py makemigrations
+python manage.py migrate
+
+* obs: cada vez que precisar criar uma nova entidade, cria a model e depois roda os comandos 
+de migrate acima
+* obs2: e depois ir em admin.py para registrar as classes
+
+2 - admin.py -> ebs/admin.py (todo conteúdo está lá)
+
+3 - se tudo estiver configurado e completo, rodar: 
+python manage.py runserver
+
+-----------------------------------------------------------
+
+Alterei o nome do campo Método de Aquisição:
+- ir em models.py e ir na classe correspondente e adicionar o meta class
+class Meta:
+        verbose_name = "Método de Aquisição"
+        verbose_name_plural = "Método de Aquisição"
+
+Obrigatoriedade nos campos: (ir em models.py)
+| blank=True | Pode deixar em branco no formulário (ex: admin) | ✅ Opcional para o usuário |
+| null=True | Pode ser NULL no banco | ✅ Opcional no banco de dados |
+| blank=False | Campo obrigatório no formulário | ❌ O usuário precisa preencher |
+| null=False | Campo obrigatório no banco | ❌ O banco precisa receber valor |
+
+No caso para campos que são select, a configuração é:
+CONFIGURACAO_CHOICES = [
+        ('VIVO', 'Vivo'),
+        ('CLARO', 'Claro'),
+        ('TIM', 'Tim'),
+        ('OI', 'Oi'),
+        ('ARQIA', 'Arquia'),
+        ('OUTRO', 'Outro'),
+    ]
+    
+    configuracao = models.CharField(
+        max_length=20,
+        choices=CONFIGURACAO_CHOICES,
+        default='VIVO',
+        blank=True,
+        null=True,
+    )
+
+* OBS: sempre que modificar qualquer tipo de campo estrutural deve-se fazer os comandos:
+python manage.py makemigrations
+python manage.py migrate
+
+
+------------------------------------------------------------
+
+Se eu precisar criar uma "automatização" que dispara em certos eventos, devo criar
+na pasta ebs/signals.py
+
+Ativar Signals e Middleware
+- ir em apps.py na pasta ebs/apps.py
+def ready(self):
+    import dispositivos.signals
+
+e em settings.py:
+MIDDLEWARE = [
+    ...
+    'dispositivos.signals.CurrentUserMiddleware',
+]
+
+------------------------------------------------------------
+
+pip install django-autocomplete-light -> para configurar visualização postos apenas dos clientes
+
+
+------------------------------------------------------------
+
+Paginação:
+- adicionar: 
+list_per_page = 50
+
+em ebs/admin.py em todas as classes
+
+instalação theme:
+- pip install django-jet-reboot
+- settings.py = INSTALLED_APPS = 'jet'
+- urls.py:
+    from django.urls import path, include
+    path('jet/', include('jet.urls', 'jet')),  # Django Jet URLs
+comandos:
+    - python manage.py makemigrations
+    - python manage.py migrate
+configuração de tema: 
+
+    

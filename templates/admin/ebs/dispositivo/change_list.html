@@ -1,0 +1,22 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+  {% with dispositivo=cl.result_list.0 %}
+    {% if request.GET.cliente__id__exact and request.GET.posto__id__exact %}
+      <h1>
+        Dispositivos do Cliente: {{ dispositivo.cliente.nome }} no Posto: {{ dispositivo.posto.nome }}
+        ({{ cl.result_count }} encontrados)
+      </h1>
+    {% elif request.GET.cliente__id__exact %}
+      <h1>
+        Dispositivos do Cliente: {{ dispositivo.cliente.nome }} ({{ cl.result_count }} encontrados)
+      </h1>
+    {% elif request.GET.posto__id__exact %}
+      <h1>
+        Dispositivos do Posto: {{ dispositivo.posto.nome }} ({{ cl.result_count }} encontrados)
+      </h1>
+    {% else %}
+      {{ block.super }}
+    {% endif %}
+  {% endwith %}
+{% endblock %}

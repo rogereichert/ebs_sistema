@@ -1,0 +1,28 @@
+{% extends "admin/change_list.html" %}
+{% load posto_extras %}
+
+{% block object-tools-items %}
+  {% if has_add_permission %}
+    {% if request.GET.cliente__id__exact %}
+      <li>
+        <a href="{{ request.path }}add/?cliente={{ request.GET.cliente__id__exact }}" class="addlink">
+          Adicionar Posto
+        </a>
+      </li>
+    {% else %}
+      {{ block.super }}
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block content_title %}
+  {% if request.GET.cliente__id__exact %}
+    {% with cliente_id=request.GET.cliente__id__exact %}
+      {% with cliente_nome=cliente_id|lookup_cliente_nome %}
+        <h1>Postos do Cliente: {{ cliente_nome }} ({{ cl.result_count }} encontrados)</h1>
+      {% endwith %}
+    {% endwith %}
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}

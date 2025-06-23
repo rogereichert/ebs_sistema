@@ -1,0 +1,5 @@
+1 - lt': (1045, "Access denied for user 'root'@'localhost' (using password: YES)")
+  warnings.warn(
+No changes detected
+
+Esse erro é porque a senha do banco de dados está errado, basta adicionar a senha correta

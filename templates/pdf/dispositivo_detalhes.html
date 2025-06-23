@@ -1,0 +1,48 @@
+{% load static %}
+<style>
+    .cabecalho {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .detalhes {
+        flex: 1;
+    }
+    .logo {
+        width: 180px;
+    }
+    .historico-item {
+        margin-bottom: 10px;
+        padding: 5px;
+    }
+
+
+</style>
+
+<table width="100%" style="margin-bottom: 20px;">
+  <tr>
+    <td style="vertical-align: top; width: 70%;">
+      <h1>Relatório do Dispositivo {{ dispositivo.numero_serial }}</h1>
+      <p><strong>Data de Entrada:</strong> {{ dispositivo.data_entrada|date:"d/m/Y" }}</p>
+      <p><strong>Data de Saída:</strong> {{ dispositivo.data_saida|date:"d/m/Y" }}</p>
+      <p><strong>Operadora:</strong> {{ dispositivo.configuracao }}</p>
+      <p><strong>Cliente:</strong> {{ dispositivo.cliente.nome }}</p>
+      <p><strong>Posto:</strong> {{ dispositivo.posto.nome }}</p>
+    </td>
+    <td style="text-align: right; vertical-align: top; padding-top: -34px;">
+      <img src="data:image/jpeg;base64,{{ logo_base64 }}" width="150" alt="Logo EBS">
+    </td>
+  </tr>
+</table>
+
+<hr>
+<h2>Histórico</h2>
+<ul>
+  {% for h in historicos %}
+    <li class="historico-item">
+      <strong>{{ h.data_hora|date:"d/m/Y H:i" }}</strong> – {{ h.usuario }}: {{ h.acao }}
+    </li>
+  {% empty %}
+    <li>Sem histórico disponível</li>
+  {% endfor %}
+</ul>
