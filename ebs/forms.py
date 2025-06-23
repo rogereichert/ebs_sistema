@@ -12,7 +12,8 @@ class DispositivoForm(forms.ModelForm):
                 forward=['cliente']  # diz que depende do campo cliente
             ),
         }
-
+        
+# Configura o formulário para o modelo Cliente
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
@@ -25,11 +26,25 @@ class ClienteForm(forms.ModelForm):
                 'data-mask': '00.000.000/0000-00',
                 'style': 'width: 500px;',
             }),
-            # 'cnpj': forms.TextInput(attrs={'placeholder': '00.000.000/0000-00'}),
-            'endereco': forms.TextInput(attrs={'placeholder': 'Rua, Avenida, etc.'}),
-            'bairro': forms.TextInput(attrs={'placeholder': 'Bairro do posto'}),
-            'cidade': forms.TextInput(attrs={'placeholder': 'Cidade do posto'}),
-            'estado': forms.TextInput(attrs={'placeholder': 'Estado do posto'}),
+            'endereco': forms.TextInput(attrs={
+                'placeholder': 'Rua, Avenida, etc.',
+                'style': 'width: 600px;'
+            }),
+            'bairro': forms.TextInput(attrs={
+                'placeholder': 'Bairro do cliente',
+                'style': 'width: 300px;'
+                
+            }),
+           
+            'cidade': forms.TextInput(attrs={
+                'placeholder': 'Cidade do cliente',
+                'style': 'width: 300px;'
+            }),
+            
+            'estado': forms.TextInput(attrs={
+                'placeholder': 'Estado do cliente',
+                'style': 'width: 150px;'                
+            }),
         }
         
 class PostoForm(forms.ModelForm):
