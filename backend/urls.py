@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from ebs.views import PostoAutocomplete
+from ebs.views import PostoAutocomplete, DispositivoAutocomplete
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('autocomplete/postos/', PostoAutocomplete.as_view(), name='posto-autocomplete'),
     path('dispositivos/', include('ebs.urls')),
+    path('autocomplete/postos/', PostoAutocomplete.as_view(), name='posto-autocomplete'),
+    path('autocomplete/dispositivos/', DispositivoAutocomplete.as_view(), name='dispositivo-autocomplete'),
 ]

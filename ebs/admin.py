@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Cliente , Posto, MetodoAquisicao, Dispositivo, Historico
-from .forms import DispositivoForm, ClienteForm, PostoForm
+from .models import Cliente , Posto, MetodoAquisicao, Dispositivo, Historico, Ticket, ComentarioTicket
+from .forms import DispositivoForm, ClienteForm, PostoForm, TicketForm
 
 
 # Register your models here.
@@ -84,4 +84,47 @@ class HistoricoAdmin(admin.ModelAdmin):
     list_filter = ('usuario', 'data_hora')
     search_fields = ('acao', 'dispositivo__numero_serial')
 
-    
+class ComentarioInline(admin.TabularInline):
+    model = ComentarioTicket
+    extra = 1
+    readonly_fields = ('data_criada', 'autor')
+    fields = ('mensagem', 'autor', 'data_criada')
+
+    def save_new_objects(self, formset, commit=True):
+        for form in formset.forms:
+            if not form.cleaned_data:
+                continue
+            obj = form.save(commit=False)
+            if not obj.autor_id:
+                obj.autor = formset.request.user
+            if commit:
+                obj.save()
+        formset.save_m2m()
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.request = request
+        return formset
+
+@admin.register(Ticket)
+class TicketAdmin(admin.ModelAdmin):
+    form = TicketForm
+    list_display = ('titulo', 'cliente', 'prioridade', 'status', 'data_abertura', 'data_limite_sla', 'sla_vencido', 'atribuido_para')
+    list_filter = ('cliente', 'prioridade', 'status', 'categoria', 'sla_vencido')
+    search_fields = ('titulo', 'descricao', 'cliente__nome', 'posto__nome', 'dispositivo__numero_serial')
+    autocomplete_fields = ('cliente', 'posto', 'dispositivo', 'usuario_solicitante', 'atribuido_para')
+    readonly_fields = ('data_abertura', 'data_limite_sla', 'sla_vencido')
+
+    inlines = [ComentarioInline]
+
+    fieldsets = (
+        ("Informações do Chamado", {
+            "fields": ("titulo", "descricao", "cliente", "posto", "dispositivo")
+        }),
+        ("Controle", {
+            "fields": ("prioridade", "categoria", "status", "usuario_solicitante", "atribuido_para")
+        }),
+        ("SLA", {
+            "fields": ("data_abertura", "data_limite_sla", "data_conclusao", "sla_vencido")
+        })
+    )

@@ -41,3 +41,19 @@ def gerar_pdf_dispositivo(request, dispositivo_id):
 
     pisa_status = pisa.CreatePDF(html, dest=response)
     return response if not pisa_status.err else HttpResponse("Erro ao gerar PDF", status=500)
+
+class PostoAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Posto.objects.all()
+        cliente_id = self.forwarded.get('cliente')
+        if cliente_id:
+            qs = qs.filter(cliente_id=cliente_id)
+        return qs
+
+class DispositivoAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Dispositivo.objects.all()
+        posto_id = self.forwarded.get('posto')
+        if posto_id:
+            qs = qs.filter(posto_id=posto_id)
+        return qs

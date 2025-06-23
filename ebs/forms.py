@@ -1,6 +1,6 @@
 from dal import autocomplete
 from django import forms
-from .models import Dispositivo, Cliente, Posto
+from .models import Dispositivo, Cliente, Posto, Ticket
 
 class DispositivoForm(forms.ModelForm):
     class Meta:
@@ -41,4 +41,18 @@ class PostoForm(forms.ModelForm):
             'estado': forms.TextInput(attrs={'placeholder': 'Estado do posto'}),
 
         }
-    
+
+class TicketForm(forms.ModelForm):
+    class Meta:
+        model = Ticket
+        fields = '__all__'
+        widgets = {
+            'posto': autocomplete.ModelSelect2(
+                url='posto-autocomplete',
+                forward=['cliente']
+            ),
+            'dispositivo': autocomplete.ModelSelect2(
+                url='dispositivo-autocomplete',
+                forward=['posto']
+            ),
+        }

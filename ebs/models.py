@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import timedelta, datetime
+from django.contrib import admin
 
 # Create your models here.
 
@@ -108,3 +110,88 @@ class Historico(models.Model):
     
     def __str__(self):
         return f"{self.usuario} - {self.acao} - {self.data_hora.strftime('%d/%m/%Y %H:%M')}"
+    
+PRIORIDADE_CHOICES = [
+    ('alta', 'Alta'),
+    ('media', 'Média'),
+    ('baixa', 'Baixa'),
+]
+
+STATUS_CHOICES = [
+    ('aberto', 'Aberto'),
+    ('em_andamento', 'Em andamento'),
+    ('resolvido', 'Resolvido'),
+    ('cancelado', 'Cancelado'),
+]
+
+CATEGORIA_CHOICES = [
+    ('suporte', 'Suporte Técnico'),
+    ('treinamento', 'Treinamento'),
+    ('administrativo', 'Administrativo'),
+    ('outros', 'Outros'),
+]
+
+SLA_POR_PRIORIDADE = {
+    'alta': timedelta(hours=4),
+    'media': timedelta(hours=8),
+    'baixa': timedelta(hours=24),
+}
+
+class Ticket(models.Model):
+    
+    def __str__(self):
+        return f"Ticket #{self.id} - {self.titulo}"
+    
+    titulo = models.CharField(max_length=200)
+    descricao = models.TextField()
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    posto = models.ForeignKey(Posto, on_delete=models.SET_NULL, null=True, blank=True)
+    dispositivo = models.ForeignKey(Dispositivo, on_delete=models.SET_NULL, null=True, blank=True)
+
+    prioridade = models.CharField(max_length=10, choices=PRIORIDADE_CHOICES, default='media')
+    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, default='suporte')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='aberto')
+
+    data_abertura = models.DateTimeField(auto_now_add=True)
+    data_limite_sla = models.DateTimeField(blank=True, null=True)
+    data_conclusao = models.DateTimeField(blank=True, null=True)
+
+    sla_vencido = models.BooleanField(default=False)
+    usuario_solicitante = models.ForeignKey(User, related_name='tickets_solicitados', on_delete=models.SET_NULL, null=True)
+    atribuido_para = models.ForeignKey(User, related_name='tickets_atribuidos', on_delete=models.SET_NULL, null=True, blank=True)
+
+    # def save(self, *args, **kwargs):
+    #     if not self.data_limite_sla:
+    #         prazo = SLA_POR_PRIORIDADE.get(self.prioridade, timedelta(hours=8))
+    #         self.data_limite_sla = self.data_abertura + prazo
+
+    #     if self.status == 'resolvido' and self.data_conclusao:
+    #         self.sla_vencido = self.data_conclusao > self.data_limite_sla
+
+    #     super().save(*args, **kwargs)
+
+    # def __str__(self):
+    #     return f"{self.titulo} - {self.get_status_display()}"
+    
+    def save(self, *args, **kwargs):
+        if not self.data_abertura:
+            self.data_abertura = datetime.now()
+
+        if not self.data_limite_sla:
+            prazo = SLA_POR_PRIORIDADE.get(self.prioridade, timedelta(hours=8))
+            self.data_limite_sla = self.data_abertura + prazo
+
+        if self.status == 'resolvido' and self.data_conclusao:
+            self.sla_vencido = self.data_conclusao > self.data_limite_sla
+
+        super().save(*args, **kwargs)
+
+
+class ComentarioTicket(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='comentarios')
+    autor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    mensagem = models.TextField()
+    data_criada = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comentário de {self.autor} em {self.ticket}"
