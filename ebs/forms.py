@@ -18,9 +18,14 @@ class ClienteForm(forms.ModelForm):
         model = Cliente
         fields = '__all__'
         widgets = {
+            'nome': forms.TextInput(attrs={'style': 'width: 600px;'}),
             'cep': forms.TextInput(attrs={'placeholder': '00000-000'}),
-            'cnpj': forms.TextInput(attrs={'data-mask': '00.000.000/0000-00'}),
-            'cnpj': forms.TextInput(attrs={'placeholder': '00.000.000/0000-00'}),
+            'cnpj': forms.TextInput(attrs={
+                'placeholder': '00.000.000/0000-00',
+                'data-mask': '00.000.000/0000-00',
+                'style': 'width: 500px;',
+            }),
+            # 'cnpj': forms.TextInput(attrs={'placeholder': '00.000.000/0000-00'}),
             'endereco': forms.TextInput(attrs={'placeholder': 'Rua, Avenida, etc.'}),
             'bairro': forms.TextInput(attrs={'placeholder': 'Bairro do posto'}),
             'cidade': forms.TextInput(attrs={'placeholder': 'Cidade do posto'}),
