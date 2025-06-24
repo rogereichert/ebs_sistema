@@ -155,7 +155,7 @@ class TicketAdmin(admin.ModelAdmin):
         )
         titulo_formatado.short_description = 'Título'
 
-    # Exibe ícone e texto indicando se o SLA foi cumprido
+    # Exibe ícone e texto indicando se o SLA foi cumprido 
     def status_sla(self, obj):
         """
         Retorna ícone com texto e evita quebra de linha na célula da tabela.
