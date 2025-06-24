@@ -1,30 +1,30 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Cliente , Posto, MetodoAquisicao, Dispositivo, Historico, Ticket, ComentarioTicket
+from .models import Cliente, Posto, MetodoAquisicao, Dispositivo, Historico, Ticket, ComentarioTicket
 from .forms import DispositivoForm, ClienteForm, PostoForm, TicketForm
 
-
-# Register your models here.
-
-# Registro do modelo Cliente no admin do Django
+# ------------------------
+# Cliente Admin
+# ------------------------
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     form = ClienteForm
-    list_per_page = 50  # ou 100, 200, etc.
+    list_per_page = 50
     list_display = ('id', 'nome', 'cnpj', 'cidade', 'estado')
     search_fields = ('nome', 'cnpj')
-    
-# Registro do modelo Posto no admin do Django
+
+# ------------------------
+# Posto Admin
+# ------------------------
 @admin.register(Posto)
 class PostoAdmin(admin.ModelAdmin):
     form = PostoForm
-    list_per_page = 50  # ou 100, 200, etc.
+    list_per_page = 50
     list_display = ('id', 'nome', 'cep', 'endereco', 'cidade', 'estado')
     list_filter = ('cliente',)
     search_fields = ('nome',)
-    list_display_links = ('id','nome',)
-    
-    # Preenche automaticamente o campo "cliente" no formulário de criação
+    list_display_links = ('id', 'nome',)
+
     def get_changeform_initial_data(self, request):
         cliente_id = request.GET.get('cliente')
         if cliente_id:
@@ -40,18 +40,22 @@ class PostoAdmin(admin.ModelAdmin):
                 response.context_data['add_url'] = add_url
         return response
 
-# Registro do modelo Dispositivo no admin do Django
+# ------------------------
+# Metodo Aquisição Admin
+# ------------------------
 @admin.register(MetodoAquisicao)
 class MetodoAquisicaoAdmin(admin.ModelAdmin):
     list_display = ('id', 'nome')
     search_fields = ('nome',)
-    
-# Registro do modelo Dispositivo no admin do Django
+
+# ------------------------
+# Dispositivo Admin
+# ------------------------
 @admin.register(Dispositivo)
 class DispositivoAdmin(admin.ModelAdmin):
-    form = DispositivoForm # configura a paginação
-    list_per_page = 50  # ou 100, 200, etc.
-    
+    form = DispositivoForm
+    list_per_page = 50
+
     fieldsets = (
         ("Dados Gerais", {
             "fields": ("numero_serial", "cliente", "posto", "status", "data_entrada", "data_saida")
@@ -66,24 +70,30 @@ class DispositivoAdmin(admin.ModelAdmin):
             "fields": ("observacoes",)
         }),
     )
-    
+
     list_display = ('numero_serial', 'cliente', 'posto', 'link_pdf', 'dados', 'online', 'leitura', 'ligacao', 'base', 'bateria', 'fonte')
     list_filter = ('cliente', 'posto', 'metodo_aquisicao', 'online', 'bateria')
-    search_fields = ('numero_serial', 'imei', 'numero',)
+    search_fields = ('numero_serial', 'imei', 'numero')
     list_editable = ('dados', 'online', 'leitura', 'ligacao', 'base', 'bateria', 'fonte')
     list_select_related = ('cliente', 'posto', 'metodo_aquisicao')
-    
+
     def link_pdf(self, obj):
         return format_html('<a href="/dispositivos/pdf/dispositivo/{}/" target="_blank">📄 PDF</a>', obj.id)
-    
+
     link_pdf.short_description = "Relatório"
 
+# ------------------------
+# Histórico Admin
+# ------------------------
 @admin.register(Historico)
 class HistoricoAdmin(admin.ModelAdmin):
     list_display = ('usuario', 'acao', 'dispositivo', 'data_hora')
     list_filter = ('usuario', 'data_hora')
     search_fields = ('acao', 'dispositivo__numero_serial')
 
+# ------------------------
+# Comentários Inline em Ticket
+# ------------------------
 class ComentarioInline(admin.TabularInline):
     model = ComentarioTicket
     extra = 1
@@ -106,13 +116,22 @@ class ComentarioInline(admin.TabularInline):
         formset.request = request
         return formset
 
+# ------------------------
+# Ticket Admin
+# ------------------------
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
     form = TicketForm
-    list_display = ('titulo', 'cliente', 'prioridade', 'status', 'data_abertura', 'data_limite_sla', 'sla_vencido', 'atribuido_para')
+
+    # Campos exibidos na lista de tickets
+    list_display = (
+        'titulo_formatado', 'cliente', 'prioridade', 'status',
+        'data_abertura', 'data_limite_sla', 'data_conclusao',
+        'status_sla', 'atribuido_para'
+    )
     list_filter = ('cliente', 'prioridade', 'status', 'categoria', 'sla_vencido')
     search_fields = ('titulo', 'descricao', 'cliente__nome', 'posto__nome', 'dispositivo__numero_serial')
-    autocomplete_fields = ('cliente', 'posto', 'dispositivo', 'usuario_solicitante', 'atribuido_para')
+    autocomplete_fields = ('cliente', 'posto', 'dispositivo', 'atribuido_para')
     readonly_fields = ('data_abertura', 'data_limite_sla', 'sla_vencido')
 
     inlines = [ComentarioInline]
@@ -128,3 +147,21 @@ class TicketAdmin(admin.ModelAdmin):
             "fields": ("data_abertura", "data_limite_sla", "data_conclusao", "sla_vencido")
         })
     )
+    
+    def titulo_formatado(self, obj):
+        return format_html(
+            '<span style="white-space: nowrap; display: inline-block; min-width: 200px;">{}</span>',
+            obj.titulo
+        )
+        titulo_formatado.short_description = 'Título'
+
+    # Exibe ícone e texto indicando se o SLA foi cumprido
+    def status_sla(self, obj):
+        """
+        Retorna ícone com texto e evita quebra de linha na célula da tabela.
+        """
+        style = "white-space: nowrap; display: inline-block; min-width: 120px;"
+        if obj.sla_vencido:
+            return format_html(f'<span style="{style} color: red;">&#10060; Vencido</span>')
+        return format_html(f'<span style="{style} color: limegreen;">&#10004; Dentro do prazo</span>')
+        status_sla.short_description = "SLA"

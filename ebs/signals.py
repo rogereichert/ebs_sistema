@@ -3,6 +3,9 @@ from django.dispatch import receiver
 from .models import Dispositivo, Historico
 from django.contrib.auth.models import User
 from threading import local
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Q
 
 _thread_locals = local()
 
@@ -40,6 +43,9 @@ def salvar_estado_anterior(sender, instance, **kwargs):
 def registrar_historico(sender, instance, created, **kwargs):
     usuario = get_current_user()
 
+    if not usuario:
+        return  # segurança extra, se o usuário estiver indefinido
+
     if created:
         acao = f"Criou dispositivo {instance.numero_serial}"
     else:
@@ -65,4 +71,15 @@ def registrar_historico(sender, instance, created, **kwargs):
         else:
             acao = f"Editou dispositivo {instance.numero_serial}"
 
+    # 🔐 Verificação para evitar duplicatas recentes (últimos 3 segundos)
+    tres_segundos_atras = timezone.now() - timedelta(seconds=3)
+    if Historico.objects.filter(
+        usuario=usuario,
+        dispositivo=instance,
+        acao=acao,
+        data_hora__gte=tres_segundos_atras
+    ).exists():
+        return  # já foi registrado recentemente
+
+    # 🔄 Cria histórico
     Historico.objects.create(usuario=usuario, dispositivo=instance, acao=acao)

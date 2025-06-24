@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from ebs.views import PostoAutocomplete, DispositivoAutocomplete
 from django.views.generic import RedirectView
+from ebs.views import PostoAutocomplete, DispositivoAutocomplete
+from ebs.views import sla_dashboard
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +27,5 @@ urlpatterns = [
     path('dispositivos/', include('ebs.urls')),
     path('autocomplete/postos/', PostoAutocomplete.as_view(), name='posto-autocomplete'),
     path('autocomplete/dispositivos/', DispositivoAutocomplete.as_view(), name='dispositivo-autocomplete'),
+     path('dashboard/sla/', sla_dashboard, name='sla-dashboard'),
 ]

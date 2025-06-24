@@ -4,9 +4,13 @@ from dal import autocomplete
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from .models import Dispositivo, Historico, Posto
+from .models import Dispositivo, Historico, Posto, Cliente, Ticket
 import os
 from django.conf import settings
+from django.shortcuts import render
+from django.db.models import Avg, Count
+from datetime import datetime
+from django.db import models
 
 class PostoAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
@@ -57,3 +61,32 @@ class DispositivoAutocomplete(autocomplete.Select2QuerySetView):
         if posto_id:
             qs = qs.filter(posto_id=posto_id)
         return qs
+
+def sla_dashboard(request):
+    tickets = Ticket.objects.all()
+
+    total = tickets.count()
+    vencidos = tickets.filter(sla_vencido=True).count()
+    dentro_prazo = total - vencidos
+    resolvidos = tickets.filter(status='resolvido').count()
+    abertos = tickets.filter(status='aberto').count()
+    em_andamento = tickets.filter(status='em_andamento').count()
+
+    tempo_medio = tickets.filter(
+        status='resolvido', 
+        data_conclusao__isnull=False
+    ).annotate(
+        duracao=models.F('data_conclusao') - models.F('data_abertura')
+    ).aggregate(media=Avg('duracao'))['media']
+
+    return render(request, 'dashboard/sla_dashboard.html', {
+        'total': total,
+        'vencidos': vencidos,
+        'dentro_prazo': dentro_prazo,
+        'resolvidos': resolvidos,
+        'abertos': abertos,
+        'em_andamento': em_andamento,
+        'tempo_medio': tempo_medio,
+        'grafico_sla': [dentro_prazo, vencidos],
+        'grafico_status': [abertos, em_andamento, resolvidos],
+    })
