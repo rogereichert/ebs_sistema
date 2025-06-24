@@ -157,7 +157,8 @@ class Ticket(models.Model):
     data_conclusao = models.DateTimeField(blank=True, null=True)
 
     sla_vencido = models.BooleanField(default=False)
-    usuario_solicitante = models.ForeignKey(User, related_name='tickets_solicitados', on_delete=models.SET_NULL, null=True)
+    # usuario_solicitante = models.ForeignKey(User, related_name='tickets_solicitados', on_delete=models.SET_NULL, null=True)
+    usuario_solicitante = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nome do solicitante")  # Alterado para CharField para simplificar
     atribuido_para = models.ForeignKey(User, related_name='tickets_atribuidos', on_delete=models.SET_NULL, null=True, blank=True)
 
     # def save(self, *args, **kwargs):
